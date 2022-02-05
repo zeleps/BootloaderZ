@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "stm32f4xx_hal.h": "c",
+        "usbd_core.h": "c",
+        "usbd_ioreq.h": "c",
+        "usbd_def.h": "c",
+        "usbd_conf.h": "c"
+    }
+}
