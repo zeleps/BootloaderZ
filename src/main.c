@@ -73,18 +73,10 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
-uint8_t USB_RX_Buffer[HID_RX_SIZE];
-uint8_t USB_TX_Buffer[8]; //USB data -> PC
-static uint8_t CMD_SIGNATURE[7] = {'B','T','L','D','C','M','D'};
-
-/* Command: <Send next data pack> */
-static uint8_t CMD_DATA_RECEIVED[8] = {'B','T','L','D','C','M','D',2};
-volatile uint8_t new_data_is_received = 0;
-static uint8_t pageData[SECTOR_SIZE];
 typedef void (*funct_ptr)(void);
 
+volatile uint8_t reset_mcu = 0;
 uint32_t magic_val;
-uint16_t erase_page = USER_CODE_PAGE;
 
 /* USER CODE END PV */
 
@@ -135,21 +127,28 @@ int main(void)
   
   magic_val = LL_RTC_BAK_GetRegister(RTC, HID_MAGIC_NUMBER_BKP_INDEX);
   
-  /* In case of incoming magic number or <BOOT_1_PIN> is LOW,
+  /* In case of incoming magic number or <TRIGGER_PIN> is LOW,
     jump to HID bootloader */
-  if ((magic_val != 0x424C)&&(HAL_GPIO_ReadPin(BOOT_1_PORT, BOOT_1_PIN) != BOOT_1_ENABLED)) {
+  if (magic_val != 0x424C &&
+#ifdef TRIGGER_PIN
+      HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) != TRIGGER_STATE
+#else
+      1
+#endif
+    ) 
+  {
     typedef void (*pFunction)(void);
     pFunction Jump_To_Application;
     uint32_t JumpAddress;
     
-    JumpAddress = *(__IO uint32_t*) (FLASH_BASE + USER_CODE_OFFSET + 4);
+    JumpAddress = *(__IO uint32_t*) (FLASH_BASE + USER_CODE_OFFSET + 4UL);
     Jump_To_Application = (pFunction) JumpAddress;
     __set_MSP(*(uint32_t *) (FLASH_BASE + USER_CODE_OFFSET));
     Jump_To_Application(); 
   }
 
-#ifdef LED_1_PIN
-  //HAL_GPIO_WritePin(LED_1_PORT, LED_1_PIN, GPIO_PIN_SET);
+#ifdef LED_PIN
+  HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
 #endif
 
   /* Reset the magic number backup memory */
@@ -171,68 +170,11 @@ int main(void)
   
   MX_USB_DEVICE_Init();
 
-  /* USER CODE BEGIN 2 */
-                                               
-  static volatile uint32_t current_Page = (USER_CODE_OFFSET / 1024);
-  static volatile uint16_t currentPageOffset = 0;
-
-  /* USER CODE END 2 */
-
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    if (new_data_is_received == 1)
-    {
-      //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-      new_data_is_received = 0;
-      if ((currentPageOffset % SECTOR_SIZE) == 0 && memcmp(USB_RX_Buffer, CMD_SIGNATURE, sizeof (CMD_SIGNATURE)) == 0) {
-        switch(USB_RX_Buffer[7]){
-          case 0x00:
+  while (!reset_mcu) ;
 
-          /*------------ Reset pages */
-          current_Page = (USER_CODE_OFFSET / 1024);
-          currentPageOffset = 0;
-          erase_page = USER_CODE_PAGE;
-          break;
-
-        case 0x01:
-
-          /*------------- Reset MCU */
-          if (currentPageOffset > 0) {
-
-          /* There are incoming
-             data that are less
-             than sector size
-             (16384) */
-            write_flash_sector(current_Page);
-          }
-          HAL_Delay(100);
-          HAL_NVIC_SystemReset();
-          break;
-        }
-      } else {
-        //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-
-        memcpy(pageData + currentPageOffset, USB_RX_Buffer, HID_RX_SIZE);
-        currentPageOffset += HID_RX_SIZE;
-        if (currentPageOffset == SECTOR_SIZE) {
-          write_flash_sector(current_Page);
-          current_Page++;
-          currentPageOffset = 0;
-          CMD_DATA_RECEIVED[7] = 0x02;
-          USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, CMD_DATA_RECEIVED, 8);
-          memset(pageData, 0, sizeof(pageData));
-        }
-      }
-    }
-  }
-
-  /* USER CODE END WHILE */
-
-  /* USER CODE BEGIN 3 */
-
-  /* USER CODE END 3 */
+  HAL_Delay(100);
+  HAL_NVIC_SystemReset();
 }
 
 /**
@@ -318,65 +260,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
  
-  /* Configure GPIO pin : PB2 */
-  GPIO_InitStruct.Pin = BOOT_1_PIN;
+  /* Configure GPIO pin : TRIGGER */
+#ifdef TRIGGER_PIN
+  GPIO_InitStruct.Pin = TRIGGER_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(BOOT_1_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(TRIGGER_PORT, &GPIO_InitStruct);
+#endif
 
-#ifdef LED_1_PIN
-  /* Configure GPIO pin : PE0 */
-  GPIO_InitStruct.Pin = LED_1_PIN;
+#ifdef LED_PIN
+  /* Configure GPIO pin : LED */
+  GPIO_InitStruct.Pin = LED_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_1_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED_PORT, &GPIO_InitStruct);
 #endif
 }
-
-/* USER CODE BEGIN 4 */
-void write_flash_sector(uint32_t currentPage) {
-  uint32_t pageAddress = FLASH_BASE + (currentPage * SECTOR_SIZE);
-  uint32_t SectorError;
-
-#ifdef LED_1_PIN
-  HAL_GPIO_WritePin(LED_1_PORT, LED_1_PIN, GPIO_PIN_SET);
-#endif
-  FLASH_EraseInitTypeDef EraseInit;
-  HAL_FLASH_Unlock();
-
-  /* Sector to the erase the flash memory (16, 32, 48 ... kbytes) */
-  if ((currentPage == 16) || (currentPage == 32) ||
-      (currentPage == 48) || (currentPage == 64) ||
-      (currentPage % 128 == 0)) {
-    EraseInit.TypeErase = FLASH_TYPEERASE_SECTORS;
-    EraseInit.VoltageRange  = FLASH_VOLTAGE_RANGE_3;
-
-    /* Specify sector number. Starts from 0x08004000 */
-    EraseInit.Sector = erase_page++;
-
-    /* This is also important! */
-    EraseInit.NbSectors = 1;
-    HAL_FLASHEx_Erase(&EraseInit, &SectorError);
-  }
-
-  uint32_t dat;
-  for (int i = 0; i < SECTOR_SIZE; i += 4) {
-    dat = pageData[i+3];
-    dat <<= 8;
-    dat += pageData[i+2];
-    dat <<= 8;
-    dat += pageData[i+1];
-    dat <<= 8;
-    dat += pageData[i];
-    HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, pageAddress + i, dat);
-  }
-#ifdef LED_1_PIN
-  HAL_GPIO_WritePin(LED_1_PORT, LED_1_PIN,GPIO_PIN_RESET);
-#endif
-  HAL_FLASH_Lock();
-}
-/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.

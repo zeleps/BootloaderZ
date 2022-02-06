@@ -4,6 +4,7 @@
         "usbd_core.h": "c",
         "usbd_ioreq.h": "c",
         "usbd_def.h": "c",
-        "usbd_conf.h": "c"
+        "usbd_conf.h": "c",
+        "main.h": "c"
     }
 }
