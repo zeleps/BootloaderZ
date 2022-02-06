@@ -1,6 +1,6 @@
 # Bootloader-Z
 
-<b>IMPORTANT: This software, as any bootloader out there, might brick your device. USE AT YOUR OWN RISK.</b>
+# IMPORTANT: This software, as any bootloader out there, might brick your device. USE AT YOUR OWN RISK.
 
 This is a custom STM32F4xx bootloader that allows flashing firmware binaries via USB.
 
