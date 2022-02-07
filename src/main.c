@@ -94,6 +94,9 @@ uint32_t magic_val;
 volatile uint32_t currentAddress = FLASH_BASE + USER_CODE_OFFSET;
 volatile uint16_t bufferIdx = 0;
 
+#if defined(__ICCARM__) /* IAR Compiler */
+  #pragma data_alignment = 4
+#endif /* defined ( __ICCARM__ ) */
 __ALIGN_BEGIN uint8_t buffer[BUFFER_SIZE] __ALIGN_END;
 
 /* USER CODE END PV */
@@ -103,8 +106,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN PFP */
-/* Private function prototypes -----------------------------------------------*/
-extern uint8_t USBD_CUSTOM_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len);
 
 /* USER CODE END PFP */
 
@@ -190,7 +191,7 @@ int main(void)
   /* Infinite loop */
   while (!reset_mcu) 
   {
-    if (bufferIdx == BUFFER_SIZE)
+    if (bufferIdx == BUFFER_SIZE) // buffer filled by USB ISR
     {
       WriteFlash(currentAddress, buffer, bufferIdx, 1);
       currentAddress += BUFFER_SIZE;
@@ -200,9 +201,8 @@ int main(void)
     }
   }
 
-  if (bufferIdx > 0)
+  if (bufferIdx > 0) // last page is partial, write last data
   {
-    // last page is partial, write last data
     WriteFlash(currentAddress, buffer, bufferIdx, 1);
   }
 
