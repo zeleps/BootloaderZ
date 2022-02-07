@@ -5,6 +5,14 @@
         "usbd_ioreq.h": "c",
         "usbd_def.h": "c",
         "usbd_conf.h": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "usbd_desc.h": "c",
+        "usb_device.h": "c",
+        "configuration.h": "c",
+        "usbd_custom_hid_if.h": "c",
+        "usbd_customhid.h": "c",
+        "stm32f4xx.h": "c",
+        "stm32f4xx_it.h": "c",
+        "usbd_customhid_if.h": "c"
     }
 }

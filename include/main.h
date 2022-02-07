@@ -73,7 +73,7 @@
 
 /* USER CODE BEGIN Includes */
 
-#include "../configuration.h"
+#include "stm32f4xx.h"
 
 /* USER CODE END Includes */
 
@@ -92,6 +92,16 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
+
+#define BUFFER_SIZE 1024
+
+extern volatile uint8_t reset_mcu;
+
+extern volatile uint32_t currentAddress;
+extern volatile uint16_t bufferIdx;
+
+extern uint8_t buffer[BUFFER_SIZE];
+
 void _Error_Handler(char *, int);
 
 #define Error_Handler() _Error_Handler(__FILE__, __LINE__)

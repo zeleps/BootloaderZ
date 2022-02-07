@@ -53,7 +53,7 @@
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_customhid.h"
-#include "usbd_custom_hid_if.h"
+#include "usbd_customhid_if.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -70,7 +70,7 @@
 /* USER CODE END PFP */
 
 /* USB Device Core handle declaration. */
-USBD_HandleTypeDef hUsbDeviceFS;
+USBD_HandleTypeDef USBD_Device;
 
 /*
  * -- Insert your variables declaration here --
@@ -97,12 +97,12 @@ void MX_USB_DEVICE_Init(void)
 	/* USER CODE END USB_DEVICE_Init_PreTreatment */
   
 	/* Init Device Library, add supported class and start the library. */
-	USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS);
-	USBD_RegisterClass(&hUsbDeviceFS, &USBD_CUSTOM_HID);
-	USBD_CUSTOM_HID_RegisterInterface(&hUsbDeviceFS, &USBD_CustomHID_fops_FS);
-	USBD_Start(&hUsbDeviceFS);
+  USBD_Init(&USBD_Device, &HID_Desc, DEVICE_FS);
+  USBD_RegisterClass(&USBD_Device, &USBD_CUSTOM_HID);
+  USBD_CUSTOM_HID_RegisterInterface(&USBD_Device, &USBD_CustomHID_template_fops);
+  USBD_Start(&USBD_Device);
 
-	/* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
+  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
   
 	/* USER CODE END USB_DEVICE_Init_PostTreatment */
 }

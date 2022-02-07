@@ -64,7 +64,16 @@
 #include "usb_device.h"
 #include <stm32f4xx_ll_rtc.h>
 #include <stm32f4xx_ll_pwr.h>
+
+#include <usbd_customhid.h>
+#include "usbd_customhid_if.h"
+
+#include "flash.h"
+
+#include "../configuration.h"
+
 /* USER CODE BEGIN Includes */
+
 
 /* USER CODE END Includes	*/
 
@@ -78,6 +87,15 @@ typedef void (*funct_ptr)(void);
 volatile uint8_t reset_mcu = 0;
 uint32_t magic_val;
 
+/**
+ * HID Flashing variables
+ */
+
+volatile uint32_t currentAddress = FLASH_BASE + USER_CODE_OFFSET;
+volatile uint16_t bufferIdx = 0;
+
+__ALIGN_BEGIN uint8_t buffer[BUFFER_SIZE] __ALIGN_END;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -86,7 +104,6 @@ static void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-void write_flash_sector(uint32_t currentPage);
 extern uint8_t USBD_CUSTOM_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len);
 
 /* USER CODE END PFP */
@@ -171,7 +188,23 @@ int main(void)
   MX_USB_DEVICE_Init();
 
   /* Infinite loop */
-  while (!reset_mcu) ;
+  while (!reset_mcu) 
+  {
+    if (bufferIdx == BUFFER_SIZE)
+    {
+      WriteFlash(currentAddress, buffer, bufferIdx, 1);
+      currentAddress += BUFFER_SIZE;
+      bufferIdx = 0;
+      CUSTOM_HID_SendReport();
+      USBD_CUSTOM_HID_ReceivePacket(&USBD_Device); // Start next USB packet transfer once data processing is completed
+    }
+  }
+
+  if (bufferIdx > 0)
+  {
+    // last page is partial, write last data
+    WriteFlash(currentAddress, buffer, bufferIdx, 1);
+  }
 
   HAL_Delay(100);
   HAL_NVIC_SystemReset();
