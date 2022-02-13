@@ -121,7 +121,7 @@ int main(void)
   /* In case of incoming magic number or <TRIGGER_PIN> is LOW,
     jump to HID bootloader */
   if (TERN1(USE_MAGIC_NUMBER, magic_val != MAGIC_NUMBER_BKP_VALUE) &&
-      TERN1(USE_TRIGGER, HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) != TRIGGER_STATE))
+      TERN1(USE_TRIGGER, HAL_GPIO_ReadPin(PORT(TRIGGER_PORT), PIN(TRIGGER_PIN)) != STATE(TRIGGER_STATE)))
   {
     SET_LED(LED_OFF);
 
@@ -177,31 +177,23 @@ static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct;
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-#ifdef STM32F4XX
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-#endif
-
   /* Configure GPIO pin : TRIGGER */
 #if ENABLED(USE_TRIGGER)
-  GPIO_InitStruct.Pin = TRIGGER_PIN;
+  PORT_ENABLE(TRIGGER_PORT);
+  GPIO_InitStruct.Pin =  PIN(TRIGGER_PIN);
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(TRIGGER_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(PORT(TRIGGER_PORT), &GPIO_InitStruct);
 #endif
 
-#if ENABLED(USE_LED)
   /* Configure GPIO pin : LED */
-  GPIO_InitStruct.Pin = LED_PIN;
+#if ENABLED(USE_LED)
+  PORT_ENABLE(LED_PORT);
+  GPIO_InitStruct.Pin = PIN(LED_PIN);
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull =  LED_PULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(PORT(LED_PORT), &GPIO_InitStruct);
   INIT_LED();
 #endif
 }

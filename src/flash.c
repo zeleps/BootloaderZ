@@ -24,13 +24,13 @@ static uint8_t IsSectorStart(uint32_t addr)
 
 static uint8_t BeginWrite()
 {
-    TERN_(USE_LED, HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_ON));
+    SET_LED(LED_ON);
     return HAL_FLASH_Unlock() == HAL_OK;
 }
 
 static uint8_t EndWrite()
 {
-    TERN_(USE_LED, HAL_GPIO_WritePin(LED_PORT, LED_PIN, LED_OFF));
+    SET_LED(LED_OFF);
     return HAL_FLASH_Lock() == HAL_OK;
 }
 

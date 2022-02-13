@@ -56,20 +56,21 @@
 
 #if defined(TRIGGER_PORT) && defined(TRIGGER_PIN) && defined(TRIGGER_STATE)
     #define USE_TRIGGER
+   
 #endif
 
 #if defined(LED_PORT) && defined(LED_PIN) && defined(LED_ON)
     #define USE_LED
-    #if LED_ON
-        #define LED_OFF GPIO_PIN_RESET
+    #if IS_STATE_SET(LED_ON)
+        #define LED_OFF PIN_RESET
         #define LED_PULL GPIO_NOPULL
         #define INIT_LED()
     #else
-        #define LED_OFF GPIO_PIN_SET
+        #define LED_OFF PIN_SET
         #define LED_PULL GPIO_PULLUP
         #define INIT_LED() SET_LED(LED_OFF)
     #endif
-    #define SET_LED(a) HAL_GPIO_WritePin(LED_PORT, LED_PIN, a)
+    #define SET_LED(a) HAL_GPIO_WritePin(PORT(LED_PORT), PIN(LED_PIN), STATE(a))
 #else
     #define SET_LED(a)
 #endif

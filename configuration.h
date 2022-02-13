@@ -47,9 +47,9 @@
  * PORT to GPIOA, PIN to 15 and enabled to GPIO_PIN_RESET.
  */
 
-#define TRIGGER_PORT                 GPIOA
-#define TRIGGER_PIN                  GPIO_PIN_15
-#define TRIGGER_STATE                GPIO_PIN_RESET
+#define TRIGGER_PORT                 B              // port letter
+#define TRIGGER_PIN                  2              // pin number
+#define TRIGGER_STATE                PIN_SET        // PIN_SET / PIN_RESET
 
 /**
  * USB flashing led indication
@@ -60,9 +60,9 @@
  * E.g. to use a led connected to PA0 as an indicator, set PORT to GPIOA, PIN to 0.
  */
 
-#define LED_PORT                     GPIOA
-#define LED_PIN                      GPIO_PIN_0
-#define LED_ON                       1              // 1 for SET pin, 0 for RESET pin (must use number)
+#define LED_PORT                     C              // port letter
+#define LED_PIN                      13             // pin number
+#define LED_ON                       PIN_RESET      // PIN_SET / PIN_RESET
 
 /**
  * USB Protocol

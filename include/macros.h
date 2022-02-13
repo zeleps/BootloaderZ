@@ -170,4 +170,23 @@
 #define MAX_2(a, b) ((a) > (b) ? (a) : (b))
 #define MAX_3(a, V...) MAX_2(a, DEFER2(_MAX_N_REF)()(TWO_ARGS(V), V))
 
+// GPIO macros
+
+#define _PORT_ENABLE(a) __HAL_RCC_GPIO##a##_CLK_ENABLE()
+#define PORT_ENABLE(a) _PORT_ENABLE(a)
+
+#define _PORT(a) GPIO##a
+#define PORT(a) _PORT(a)
+
+#define _PIN(a) GPIO_PIN_##a
+#define PIN(a) _PIN(a)
+
+#define _STATE(a) GPIO_##a
+#define STATE(a) _STATE(a)
+
+#define IS_STATE_SET(a) _IS_STATE_SET(a)
+#define _IS_STATE_SET(a) a##_1
+#define PIN_SET_1 1
+#define PIN_RESET_1 0
+
 #endif // __MACROS_H
