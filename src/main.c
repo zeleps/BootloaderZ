@@ -1,17 +1,10 @@
 
 /*******************************************************************************
-  *
-  * HID bootloader for STM32F407 MCU
-  *
-  ******************************************************************************
+ * 
+  * Bootloader-Z
   * 
-  *	Created by: Vassilis Serasidis
-  *       Date: 28 June 2018
-  *       Home: http://www.serasidis.gr
-  *      email: avrsite@yahoo.gr, info@serasidis.gr
-  *
-  ******************************************************************************
-
+  * A bootloader for conditional firmware flashing via USB for STM32 MCUs
+  * 
   ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
@@ -60,102 +53,78 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <stm32f4xx_hal.h>
-#include "usb_device.h"
-#include <stm32f4xx_ll_rtc.h>
-#include <stm32f4xx_ll_pwr.h>
 
-#include <usbd_customhid.h>
-#include "usbd_customhid_if.h"
+#include PLATFORM_H_HAL
+#include "usb_device.h"
+#include PLATFORM_H_LL_RTC
+#include PLATFORM_H_LL_PWR
+
+#include "clock.h"
 
 #include "flash.h"
 
-#include "../configuration.h"
-
-/* USER CODE BEGIN Includes */
-
-
-/* USER CODE END Includes	*/
-
 /* Private variables ---------------------------------------------------------*/
 
-/* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
 typedef void (*funct_ptr)(void);
-
-volatile uint8_t reset_mcu = 0;
-uint32_t magic_val;
 
 /**
  * HID Flashing variables
  */
 
-volatile uint32_t currentAddress = FLASH_BASE + USER_CODE_OFFSET;
-volatile uint16_t bufferIdx = 0;
-
-#if defined(__ICCARM__) /* IAR Compiler */
-  #pragma data_alignment = 4
-#endif /* defined ( __ICCARM__ ) */
-__ALIGN_BEGIN uint8_t buffer[BUFFER_SIZE] __ALIGN_END;
-
-/* USER CODE END PV */
+volatile uint8_t reset_mcu = 0;
 
 /* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 
-/* USER CODE BEGIN PFP */
+#if ENABLED(USE_RTC)
 
-/* USER CODE END PFP */
+RTC_HandleTypeDef hrtc;
 
-/* USER CODE BEGIN 0 */
+static void InitRTC()
+{
+  hrtc.Instance = RTC;
+  //hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+  //hrtc.Init.OutPut = RTC_OUTPUTSOURCE_NONE;
 
-/* USER CODE END 0 */
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+#endif
+
+typedef void (*pFunction)(void);
 
 /**
-  * @brief  The application entry point.
-  *
-  * @retval None
-  */
+ * @brief  The application entry point.
+ *
+ * @retval None
+ */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration----------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE BEGIN SysInit */
   MX_GPIO_Init();
-   
-  HAL_Delay(100);
-  
-  magic_val = LL_RTC_BAK_GetRegister(RTC, HID_MAGIC_NUMBER_BKP_INDEX);
-  
+
+#ifdef USE_MAGIC_NUMBER
+  TERN_(USE_RTC, InitRTC());
+  uint32_t magic_val = READ_MAGIC_NUMBER();
+#endif
+
   /* In case of incoming magic number or <TRIGGER_PIN> is LOW,
     jump to HID bootloader */
-  if (magic_val != 0x424C &&
-#ifdef TRIGGER_PIN
-      HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) != TRIGGER_STATE
-#else
-      1
-#endif
-    ) 
+  if (TERN1(USE_MAGIC_NUMBER, magic_val != MAGIC_NUMBER_BKP_VALUE) &&
+      TERN1(USE_TRIGGER, HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) != TRIGGER_STATE))
   {
-    typedef void (*pFunction)(void);
+    SET_LED(LED_OFF);
+
     pFunction Jump_To_Application;
     uint32_t JumpAddress;
     
@@ -165,104 +134,36 @@ int main(void)
     Jump_To_Application(); 
   }
 
-#ifdef LED_PIN
-  HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
-#endif
+  SET_LED(LED_ON);
 
+#ifdef USE_MAGIC_NUMBER
   /* Reset the magic number backup memory */
-  
-  /* Enable Power Clock */
-  __HAL_RCC_PWR_CLK_ENABLE();
-  
-  /* Allow access to Backup domain */
+
+  #ifdef USE_RTC
+    HAL_RTCEx_DeactivateTamper(&hrtc, RTC_TAMPER_1);
+    __HAL_RTC_TAMPER_CLEAR_FLAG(&hrtc, RTC_FLAG_TAMP1F);
+  #endif
+
   LL_PWR_EnableBkUpAccess();
-  
-  LL_RTC_BAK_SetRegister(RTC, HID_MAGIC_NUMBER_BKP_INDEX, 0);
-  
-  /* Forbid access to Backup domain */
+  WRITE_MAGIC_NUMBER(0);
   LL_PWR_DisableBkUpAccess();
+#endif
   
   /* USER CODE END SysInit */
   
   /* Initialize all configured peripherals */
   
+#if ANY(USE_MAGIC_NUMBER, USE_TRIGGER)
   MX_USB_DEVICE_Init();
+#endif
 
   /* Infinite loop */
-  while (!reset_mcu) 
-  {
-    if (bufferIdx == BUFFER_SIZE) // buffer filled by USB ISR
-    {
-      WriteFlash(currentAddress, buffer, bufferIdx, 1);
-      currentAddress += BUFFER_SIZE;
-      bufferIdx = 0;
-      CUSTOM_HID_SendReport();
-      USBD_CUSTOM_HID_ReceivePacket(&USBD_Device); // Start next USB packet transfer once data processing is completed
-    }
-  }
-
-  if (bufferIdx > 0) // last page is partial, write last data
-  {
-    WriteFlash(currentAddress, buffer, bufferIdx, 1);
-  }
+  while (!reset_mcu)
+    ;
 
   HAL_Delay(100);
   HAL_NVIC_SystemReset();
-}
 
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-
-/* 168 MHz */
-void SystemClock_Config(void)
-{
-
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-
-  /* Configure the main internal regulator output voltage */
-  __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-
-  /* Initializes the CPU, AHB and APB busses clocks (72 MHz) */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-#ifdef CLOCK_DIV
-  RCC_OscInitStruct.PLL.PLLM = CLOCK_DIV;
-#else
-  RCC_OscInitStruct.PLL.PLLM = 4;
-#endif
-  RCC_OscInitStruct.PLL.PLLN = 72;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
-  /* Initializes the CPU, AHB and APB busses clocks  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK |
-  RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 |
-  RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
-  /* Configure the Systick interrupt time */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
-  /* Configure the Systick */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 /* Configure pins as 
@@ -277,37 +178,31 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+#ifdef STM32F4XX
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+#endif
 
-  /* Configure GPIO pin Output Level */
-
-  /* Configure GPIO pin : PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
- 
   /* Configure GPIO pin : TRIGGER */
-#ifdef TRIGGER_PIN
+#if ENABLED(USE_TRIGGER)
   GPIO_InitStruct.Pin = TRIGGER_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(TRIGGER_PORT, &GPIO_InitStruct);
 #endif
 
-#ifdef LED_PIN
+#if ENABLED(USE_LED)
   /* Configure GPIO pin : LED */
   GPIO_InitStruct.Pin = LED_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull =  LED_PULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_PORT, &GPIO_InitStruct);
+  INIT_LED();
 #endif
 }
 
@@ -319,13 +214,9 @@ static void MX_GPIO_Init(void)
   */
 void _Error_Handler(char *file, int line)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  while(1) {
+  __disable_irq();
+  while (1)
     ;
-  }
-
-  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT

@@ -73,7 +73,9 @@
 
 /* USER CODE BEGIN Includes */
 
-#include "stm32f4xx.h"
+#include "conditionals.h"
+
+#include PLATFORM_H_MAIN
 
 /* USER CODE END Includes */
 
@@ -93,14 +95,8 @@
  extern "C" {
 #endif
 
-#define BUFFER_SIZE 1024
-
+TERN_(USE_MAGIC_NUMBER, extern RTC_HandleTypeDef hrtc);
 extern volatile uint8_t reset_mcu;
-
-extern volatile uint32_t currentAddress;
-extern volatile uint16_t bufferIdx;
-
-extern uint8_t buffer[BUFFER_SIZE];
 
 void _Error_Handler(char *, int);
 

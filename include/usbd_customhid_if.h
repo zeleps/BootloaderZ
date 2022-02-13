@@ -32,7 +32,7 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-extern USBD_CUSTOM_HID_ItfTypeDef USBD_CustomHID_template_fops;
+extern USBD_CUSTOM_HID_ItfTypeDef USBD_CustomHID_fops;
 
 int8_t CUSTOM_HID_SendReport();
 

@@ -24,16 +24,18 @@
 #include "usbd_desc.h"
 #include "usbd_conf.h"
 
+#include "conditionals.h"
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define USBD_VID                      0x1209
-#define USBD_PID                      0xBEBA
-#define USBD_LANGID_STRING            1033
-#define USBD_MANUFACTURER_STRING      "STM32 BootloaderZ"
-#define USBD_PRODUCT_HS_STRING        "STM32 HID Flash Device"
+#define USBD_VID                      USB_DEVICE_VENDOR_ID
+#define USBD_PID                      USB_DEVICE_PRODUCT_ID
+#define USBD_LANGID_STRING 1033
+#define USBD_MANUFACTURER_STRING      "BootloaderZ"
+#define USBD_PRODUCT_HS_STRING        "BootloaderZ " USB_PROTOCOL " Device"
 #define USBD_PRODUCT_FS_STRING        USBD_PRODUCT_HS_STRING
-#define USBD_CONFIGURATION_HS_STRING  "STM32 HID Flash Config"
-#define USBD_INTERFACE_HS_STRING      "STM32 HID Flash Interface"
+#define USBD_CONFIGURATION_HS_STRING  "BootloaderZ " USB_PROTOCOL " Config"
+#define USBD_INTERFACE_HS_STRING      "BootloaderZ " USB_PROTOCOL " Interface"
 #define USBD_CONFIGURATION_FS_STRING  USBD_CONFIGURATION_HS_STRING
 #define USBD_INTERFACE_FS_STRING      USBD_INTERFACE_HS_STRING
 
@@ -56,7 +58,7 @@ uint8_t *USBD_USR_BOSDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
 #endif
 
 /* Private variables ---------------------------------------------------------*/
-USBD_DescriptorsTypeDef HID_Desc =
+USBD_DescriptorsTypeDef FS_Desc =
 {
   USBD_Class_DeviceDescriptor,
   USBD_Class_LangIDStrDescriptor,

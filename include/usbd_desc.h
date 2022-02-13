@@ -56,7 +56,7 @@
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-extern USBD_DescriptorsTypeDef HID_Desc;
+extern USBD_DescriptorsTypeDef FS_Desc;
 
 #endif /* __USBD_DESC_TEMPLATE_H*/
 

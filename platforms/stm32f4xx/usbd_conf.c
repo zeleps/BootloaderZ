@@ -19,12 +19,14 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx.h"
-#include "stm32f4xx_hal.h"
+#include "conditionals.h"
+
+#include PLATFORM_H_MAIN
+#include PLATFORM_H_HAL
 #include "usbd_def.h"
 #include "usbd_core.h"
 
-//#include "usbd_dfu.h"
+#include "usbd_dfu.h"
 #include "usbd_customhid.h"
 
 /* USER CODE BEGIN Includes */
@@ -610,7 +612,7 @@ uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
  */
 void *USBD_static_malloc(uint32_t size)
 {
-  static uint32_t mem[(sizeof(USBD_CUSTOM_HID_HandleTypeDef) / 4) + 1]; /* On 32-bit boundary */
+  static uint32_t mem[(sizeof(TERN(USB_PROTOCOL_DFU, USBD_DFU_HandleTypeDef, USBD_CUSTOM_HID_HandleTypeDef)) / 4) + 1];        /* On 32-bit boundary */
   return mem;
 }
 

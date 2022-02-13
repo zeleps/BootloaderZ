@@ -13,6 +13,24 @@
         "usbd_customhid.h": "c",
         "stm32f4xx.h": "c",
         "stm32f4xx_it.h": "c",
-        "usbd_customhid_if.h": "c"
+        "usbd_customhid_if.h": "c",
+        "usbd_dfu_if.h": "c",
+        "usbd_dfu.h": "c",
+        "stm32f4xx_hal_conf.h": "c",
+        "flash.h": "c",
+        "stm32f1xx_hal.h": "c",
+        "stm32f1xx_hal_conf.h": "c",
+        "stm32f1xx_hal_flash.h": "c",
+        "stm32f1xx_hal_def.h": "c",
+        "stm32f1xx_hal_flash_ex.h": "c",
+        "stm32f4xx_hal_def.h": "c",
+        "stm32f4xx_ll_rtc.h": "c",
+        "stm32f407xx.h": "c",
+        "system_stm32f4xx.h": "c",
+        "macros.h": "c",
+        "stm32f1xx_ll_rtc.h": "c",
+        "setup_clock.h": "c",
+        "stm32f1xx_it.h": "c",
+        "stm32f1xx_hal_rcc_ex.h": "c"
     }
 }

@@ -28,6 +28,7 @@ EndBSPDependencies */
 #include "usbd_customhid_if.h"
 #include "usb_device.h"
 #include "main.h"
+#include "flash.h"
 
 #include "../configuration.h"
 
@@ -43,6 +44,15 @@ static uint8_t ProcessPacket(const uint8_t *packetData);
 
 /* Private variables ---------------------------------------------------------*/
 #define HID_RX_SIZE 64
+#define BUFFER_SIZE 1024
+
+volatile uint32_t currentAddress = FLASH_BASE + USER_CODE_OFFSET;
+volatile uint16_t bufferIdx = 0;
+
+#if defined(__ICCARM__) /* IAR Compiler */
+#pragma data_alignment = 4
+#endif /* defined ( __ICCARM__ ) */
+__ALIGN_BEGIN uint8_t buffer[BUFFER_SIZE] __ALIGN_END;
 
 static uint8_t CMD_SIGNATURE[8] = {'B', 'T', 'L', 'D', 'C', 'M', 'D', 2};
 
@@ -64,7 +74,7 @@ __ALIGN_BEGIN static uint8_t CUSTOM_HID_ReportDesc[USBD_CUSTOM_HID_REPORT_DESC_S
         0xC0 /*     END_COLLECTION	             */
 };
 
-USBD_CUSTOM_HID_ItfTypeDef USBD_CustomHID_template_fops =
+USBD_CUSTOM_HID_ItfTypeDef USBD_CustomHID_fops =
     {
         CUSTOM_HID_ReportDesc,
         CUSTOM_HID_Init,
@@ -139,6 +149,10 @@ static uint8_t ProcessPacket(const uint8_t *packetData)
         return 1;
 
       case 0x01: // Reset MCU
+        if (bufferIdx > 0) // last page is partial, write last data
+        {
+          WriteFlash(currentAddress, buffer, bufferIdx, 1);
+        }
         reset_mcu = 1;
         return 0; // receiving next packet is unnecessary; board will reset
     }
@@ -149,7 +163,11 @@ static uint8_t ProcessPacket(const uint8_t *packetData)
 
   if (bufferIdx == BUFFER_SIZE) 
   {
-    return 0; // flash writing and next packet reception is triggered in main loop
+    WriteFlash(currentAddress, buffer, bufferIdx, 1);
+    currentAddress += BUFFER_SIZE;
+    bufferIdx = 0;
+    CUSTOM_HID_SendReport();
+    return 1; // flash writing and next packet reception is triggered in main loop
   }
 
   CUSTOM_HID_SendReport();

@@ -26,7 +26,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx.h"  /* replace 'stm32xxx' with your HAL driver header filename, ex: stm32f4xx.h */
+#include "conditionals.h"
+
+#include PLATFORM_H_MAIN
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,7 +48,7 @@ extern "C" {
 
 #define USBD_MAX_NUM_INTERFACES                     1U
 #define USBD_MAX_NUM_CONFIGURATION                  1U
-#define USBD_MAX_STR_DESC_SIZ                       0x100U
+#define USBD_MAX_STR_DESC_SIZ                       0x200U
 #define USBD_SELF_POWERED                           1U
 #define USBD_DEBUG_LEVEL                            0U
 
@@ -56,6 +58,7 @@ extern "C" {
 /* DFU Class Config */
 #define USBD_DFU_MAX_ITF_NUM                        1U
 #define USBD_DFU_XFER_SIZE                          1024U
+#define USBD_DFU_APP_DEFAULT_ADD                    0x08000000U + USER_CODE_OFFSET
 
 /* CustomHID Class Config */
 #define CUSTOM_HID_HS_BINTERVAL                     0x05U
@@ -76,10 +79,10 @@ extern "C" {
 
 /* Memory management macros make sure to use static memory allocation */
 /** Alias for memory allocation. */
-#define USBD_malloc         malloc //(void *)USBD_static_malloc
+#define USBD_malloc         (void *)USBD_static_malloc
 
 /** Alias for memory release. */
-#define USBD_free           free //USBD_static_free
+#define USBD_free           USBD_static_free
 
 /** Alias for memory set. */
 #define USBD_memset         memset

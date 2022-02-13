@@ -52,39 +52,19 @@
 #include "usb_device.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
+
+#ifdef USB_PROTOCOL_HID
 #include "usbd_customhid.h"
 #include "usbd_customhid_if.h"
+#endif
 
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* USER CODE BEGIN PV */
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE END PV */
-
-/* USER CODE BEGIN PFP */
-/* Private function prototypes -----------------------------------------------*/
-
-/* USER CODE END PFP */
+#ifdef USB_PROTOCOL_DFU
+#include "usbd_dfu.h"
+#include "usbd_dfu_if.h"
+#endif
 
 /* USB Device Core handle declaration. */
 USBD_HandleTypeDef USBD_Device;
-
-/*
- * -- Insert your variables declaration here --
- */
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/*
- * -- Insert your external function declaration here --
- */
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
 
 /**
   * Init USB device Library, add supported class and start the library
@@ -92,27 +72,19 @@ USBD_HandleTypeDef USBD_Device;
   */
 void MX_USB_DEVICE_Init(void)
 {
-	/* USER CODE BEGIN USB_DEVICE_Init_PreTreatment */
-  
-	/* USER CODE END USB_DEVICE_Init_PreTreatment */
-  
-	/* Init Device Library, add supported class and start the library. */
-  USBD_Init(&USBD_Device, &HID_Desc, DEVICE_FS);
-  USBD_RegisterClass(&USBD_Device, &USBD_CUSTOM_HID);
-  USBD_CUSTOM_HID_RegisterInterface(&USBD_Device, &USBD_CustomHID_template_fops);
-  USBD_Start(&USBD_Device);
+  #if ENABLED(USB_PROTOCOL_HID)
+    USBD_Init(&USBD_Device, &FS_Desc, DEVICE_FS);
+    USBD_RegisterClass(&USBD_Device, &USBD_CUSTOM_HID);
+    USBD_CUSTOM_HID_RegisterInterface(&USBD_Device, &USBD_CustomHID_fops);
+    USBD_Start(&USBD_Device);
+  #endif 
 
-  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
-  
-	/* USER CODE END USB_DEVICE_Init_PostTreatment */
+  #if ENABLED(USB_PROTOCOL_DFU)
+    USBD_Init(&USBD_Device, &FS_Desc, DEVICE_FS);
+    USBD_RegisterClass(&USBD_Device, &USBD_DFU);
+    USBD_DFU_RegisterMedia(&USBD_Device, &USBD_DFU_fops);
+    USBD_Start(&USBD_Device);
+  #endif
 }
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
