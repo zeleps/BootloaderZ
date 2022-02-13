@@ -6,7 +6,7 @@ This is a custom STM32F1xx/STM32F4xx bootloader that allows flashing firmware bi
 
 # Why?
 
-Flashing new firmware with minimal interaction with the physical board is really convenient in some cases. In my case, it was flashing my 3d printer's BTT GTR 1.0 board through my OctoPi at the press of a button (two actually, reset + LCD encoder button), which I can now trigger via RPi's GPIO and flash at will without any manual interaction.
+Flashing new firmware with minimal interaction with the physical board is really convenient in some cases. In my case, it was flashing my 3d printer's BTT GTR 1.0 board through my OctoPi at the press of a button (two actually, reset + LCD encoder button), which I can now trigger via RPi's GPIO and flash at will, without any manual interaction.
 
 # The project
 
@@ -44,7 +44,7 @@ upload_protocol    = dfu
 
 # Future development
 
-More STM32 MCUs / boards supported.
+More STM32 MCUs / boards to support.
 
 So far, the project has been tested on the following boards:
 
