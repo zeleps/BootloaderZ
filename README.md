@@ -20,7 +20,7 @@ Use an ST-Link compatible device, properly connected to your board and the PC. U
 
 # Using
 
-Enable the configured trigger and reset the board (in case of pin trigger, keep the pin enabled while resetting and until the USB device appears at the host. Use [hid-flash.exe](https://github.com/Serasidis/STM32_HID_Bootloader/releases) cmd line tool to upload a firmware binary file manually, or if your firmware project is a PlatformIO project, simply configure `hid` as your preferred `upload-proto` in the env section of your firmware's platformio.ini file, like in the following example:
+Enable the configured trigger and reset the board (in case of pin trigger, keep the pin enabled while resetting and until the USB device appears at the host. Use [hid-flash.exe](https://github.com/Serasidis/STM32_HID_Bootloader/releases) cmd line tool to upload a firmware binary file manually, or if your firmware project is a PlatformIO project, simply configure `hid` as your preferred `upload-protocol` in the env section of your firmware's platformio.ini file, like in the following example:
 
 ```
 #
