@@ -12,9 +12,9 @@ Flashing new firmware with minimal interaction with the physical board is really
 
 This bootloader is a work in progress, meaning it has not been tested widely, and there is still a lot to consider on hardware compatibility. Please consider this as something experimental, until you've made sure all aspects work on your specific board.
 
-The project was inspired by [Serasidis/STM32_HID_Bootloader](https://github.com/Serasidis/STM32_HID_Bootloader) which originates from [bootsector/stm32-hid-bootloader](https://github.com/bootsector/stm32-hid-bootloader) and retains compatibility with the hid-flash tool.
+The project was inspired by [Serasidis/STM32_HID_Bootloader](https://github.com/Serasidis/STM32_HID_Bootloader) (which originates from [bootsector/stm32-hid-bootloader](https://github.com/bootsector/stm32-hid-bootloader)) and retains compatibility with the hid-flash tool.
 
-The main change is adaptation to PlatformIO (the project should build and upload as is, provided you have an ST-Link/v2 device connected). It uses the original STM32Cube framework libraries instead of containing slightly modified parts of it. DFU protocol is implemented and tested on both STM32F1xx/4xx platforms. For the moment, compatibility with the older version of HID-Flash.exe is maintained, so the tool's sources are not included in the project.
+The project is adapted to PlatformIO (the project should build and upload as is, provided you have an ST-Link/v2 device connected). It uses the original STM32Cube framework libraries instead of containing slightly modified parts of it. DFU protocol is implemented and tested on both STM32F1xx/4xx platforms. For the moment, compatibility with the older version of HID-Flash.exe is maintained only in STM32F4xx compilation. HID-flash tool's sources are not included in the project.
 
 Before you try this, be absolutely sure that you have a copy of the original bootloader of your board, *which you have successfully flashed back to the board without problems*.
 
