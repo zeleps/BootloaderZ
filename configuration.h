@@ -44,7 +44,7 @@
  * Enabling the pin while resetting the board will enter USB flashing mode.
  * Specify port (GPIOx), pin number and the opposite of the default pin state.
  * E.g. to use the RepRap Display button as a trigger (PA15 -> gnd), set
- * PORT to GPIOA, PIN to 15 and enabled to GPIO_PIN_RESET.
+ * PORT to A, PIN to 15 and STATE to PIN_RESET.
  */
 
 #define TRIGGER_PORT                 B              // port letter
@@ -57,7 +57,7 @@
  * Specify a pin to set when entering USB flashing mode. The pin will stay set
  * until data transfer begins. It will toggle while data is being written to memory
  * and it will reset when flashing completes and the board is reset.
- * E.g. to use a led connected to PA0 as an indicator, set PORT to GPIOA, PIN to 0.
+ * E.g. to use a led connected to PA0 as an indicator, set PORT to A, PIN to 0, ON to PIN_SET.
  */
 
 #define LED_PORT                     C              // port letter
@@ -70,8 +70,8 @@
  * Uncomment one (and only one) of the two following lines
  */
 
-#define USB_PROTOCOL_DFU            // Fast, standardized, compatible. Will require a customized driver in windows (see: https://bit.ly/3gzkopp)
-//#define USB_PROTOCOL_HID            // No specialized driver needed in windows. Slower, works only with HID-Flash tool (see: https://bit.ly/34JPXdt)
+//#define USB_PROTOCOL_DFU            // Fast, standardized, compatible. Will require a customized driver in windows (see: https://bit.ly/3gzkopp)
+#define USB_PROTOCOL_HID            // No specialized driver needed in windows. Slower, works only with HID-Flash tool (see: https://bit.ly/34JPXdt)
 
 #ifdef USB_PROTOCOL_DFU             // Additional configuration for DFU protocol
 

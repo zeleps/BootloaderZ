@@ -54,8 +54,8 @@
 #include "usbd_desc.h"
 
 #ifdef USB_PROTOCOL_HID
-#include "usbd_customhid.h"
 #include "usbd_customhid_if.h"
+#include "usbd_customhid.h"
 #endif
 
 #ifdef USB_PROTOCOL_DFU

@@ -109,6 +109,12 @@ static int8_t CUSTOM_HID_DeInit(void)
   return (0);
 }
 
+#ifdef STM32F1XX
+uint8_t USBD_CUSTOM_HID_ReceivePacket(USBD_HandleTypeDef *pdev)
+{
+  return USBD_OK;
+}
+#endif
 
 /**
   * @brief  CUSTOM_HID_Control
@@ -170,7 +176,6 @@ static uint8_t ProcessPacket(const uint8_t *packetData)
     return 1; // flash writing and next packet reception is triggered in main loop
   }
 
-  CUSTOM_HID_SendReport();
   return 1;
 }
 
