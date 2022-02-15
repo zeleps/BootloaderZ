@@ -70,8 +70,8 @@
  * Uncomment one (and only one) of the two following lines
  */
 
-//#define USB_PROTOCOL_DFU            // Fast, standardized, compatible. Will require a customized driver in windows (see: https://bit.ly/3gzkopp)
-#define USB_PROTOCOL_HID            // No specialized driver needed in windows. Slower, works only with HID-Flash tool (see: https://bit.ly/34JPXdt)
+#define USB_PROTOCOL_DFU            // Fast, standardized, compatible. Will require a customized driver in windows (see: https://bit.ly/3gzkopp)
+//#define USB_PROTOCOL_HID            // No specialized driver needed in windows. Slower, works only with HID-Flash tool (see: https://bit.ly/34JPXdt)
 
 #ifdef USB_PROTOCOL_DFU             // Additional configuration for DFU protocol
 
