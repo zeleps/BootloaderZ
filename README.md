@@ -52,6 +52,6 @@ STM32F4XX:
 
 - BigTreeTech GTR 1.0 (STM32F407IGT6)
 
-STM32F1XX (DFU only):
+STM32F1XX:
 
 - HR0214-32 development board (STM32F103C8T6)
