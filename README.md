@@ -24,7 +24,7 @@ Customizing the bootloader behavior is done by modifying the Configuration.h fil
 
 # Building and uploading
 
-Use an ST-Link compatible device, properly connected to your board and the PC. Use PlatformIO's upload command to install. Resetting the board with BOOT0 pin set to 3.3V should also work, but this depends on your board and MCU (I will provide some details on this procedure later).
+Use an ST-Link compatible device, properly connected to your board and the PC. Use PlatformIO's upload command to install. Resetting the board with BOOT0 pin set to 3.3V should also work, but this depends on your board and MCU (check the [wiki](https://github.com/zeleps/BootloaderZ/wiki) for more info on the subject).
 
 # Using
 
