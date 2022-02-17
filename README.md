@@ -42,6 +42,8 @@ build_flags        = ${stm32_variant.build_flags} -DSTM32F407IX
 upload_protocol    = dfu
 ```
 
+Visit the [Wiki](/zeleps/BootloaderZ/wiki) for more info on flashing and using.
+
 # Future development
 
 More STM32 MCUs / boards to support.
