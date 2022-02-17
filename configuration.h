@@ -61,7 +61,7 @@
  */
 
 #define LED_PORT                     C              // port letter
-#define LED_PIN                      13             // pin number
+#define LED_PIN                      15             // pin number
 #define LED_ON                       PIN_RESET      // PIN_SET / PIN_RESET
 
 /**
@@ -75,10 +75,11 @@
 
 #ifdef USB_PROTOCOL_DFU             // Additional configuration for DFU protocol
 
-    #define USB_DEVICE_USE_HID_ID           // 1209:BEBA standard HID-Flash compatible ID, may require uninstallation of DFU driver to switch back to HID
-    //#define USB_DEVICE_USE_STLINK_ID      // 0483:3748 standard DFU-Util compatible ID, may conflict with a connected STLink
+    #define USB_DEVICE_USE_STM_ID         // 0483:df11 ID of the internal bootloader DFU device. Will appear as STM32 Bootloader.
+    //#define USB_DEVICE_USE_STLINK_ID      // 0483:3748 ST-Link/v2 device ID, hardcoded into PlatformIO's DFU upload protocol. Ready to work with PlatformIO.
+    //#define USB_DEVICE_USE_HID_ID         // 1209:BEBA standard HID-Flash compatible ID, may require uninstallation of DFU driver to switch back to HID.
 
-    #if NONE(USB_DEVICE_USE_STLINK_ID, USB_DEVICE_USE_HID_ID)
+    #if NONE(USB_DEVICE_USE_STM_ID, USB_DEVICE_USE_HID_ID, USB_DEVICE_USE_STLINK_ID)
         // define your own values
         #define USB_DEVICE_VENDOR_ID 0x1209
         #define USB_DEVICE_PRODUCT_ID 0xBEBA

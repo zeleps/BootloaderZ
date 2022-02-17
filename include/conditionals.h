@@ -16,14 +16,14 @@
     #define PLATFORM stm32f1xx
     #define FLASH_1K_PAGES
     #ifndef DFU_FLASH_DESCRIPTOR
-        #define DFU_FLASH_DESCRIPTOR "@Internal Flash/0x08000000/16*001Ka,48*001Kg,64*001Kg" // default for 128KB flash MCU, first 16K reserved for bootloader
+        #define DFU_FLASH_DESCRIPTOR "@Internal Flash /0x08000000/16*001Ka,48*001Kg,64*001Kg" // default for 128KB flash MCU, first 16K reserved for bootloader
     #endif
 #elif ENABLED(STM32F407xx)
     #define STM32F4XX
     #define PLATFORM stm32f4xx
     #define FLASH_4X16_1X64_NX128_SECTORS
     #ifndef DFU_FLASH_DESCRIPTOR
-        #define DFU_FLASH_DESCRIPTOR "@Internal Flash/0x08000000/01*016Ka,03*016Kg,01*064Kg,07*128Kg,04*016Kg,01*064Kg,07*128Kg" // default for 2MB flash MCU, first sector reserved for bootloader
+        #define DFU_FLASH_DESCRIPTOR "@Internal Flash /0x08000000/01*016Ka,03*016Kg,01*064Kg,07*128Kg,04*016Kg,01*064Kg,07*128Kg" // default for 2MB flash MCU, first sector reserved for bootloader
     #endif
 #endif
 
@@ -91,13 +91,16 @@
 
 #ifdef USB_PROTOCOL_DFU
     
-    #if BOTH(USB_DEVICE_USE_STLINK_ID, USB_DEVICE_USE_HID_ID)
+    #if MANY(USB_DEVICE_USE_STLINK_ID, USB_DEVICE_USE_HID_ID, USB_DEVICE_USE_STLINK_ID)
         #error "Only one USB device ID can be configured."
     #endif
 
-    #if ENABLED(USB_DEVICE_USE_STLINK_ID)
+    #if ENABLED(USB_DEVICE_USE_STM_ID)
         #define USB_DEVICE_VENDOR_ID 0x0483
-        #define USB_DEVICE_PRODUCT_ID 0x3478
+        #define USB_DEVICE_PRODUCT_ID 0xdf11
+    #elif ENABLED(USB_DEVICE_USE_STLINK_ID)
+        #define USB_DEVICE_VENDOR_ID 0x0483
+        #define USB_DEVICE_PRODUCT_ID 0x3748
     #elif ENABLED(USB_DEVICE_USE_HID_ID)
         #define USB_DEVICE_VENDOR_ID 0x1209
         #define USB_DEVICE_PRODUCT_ID 0xBEBA
