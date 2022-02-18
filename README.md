@@ -1,6 +1,6 @@
 # Bootloader-Z
 
-# IMPORTANT: This software, as any bootloader out there, might brick your device. USE AT YOUR OWN RISK.
+## IMPORTANT: This software, as any bootloader out there, might brick your device. USE AT YOUR OWN RISK.
 
 This is a custom STM32F1xx/STM32F4xx bootloader that allows flashing firmware binaries via USB, using DFU or HID-flash protocols. The -ambitious- intention behind the project is to implmenet the intricacies of many more STM32 MCUs into a single project that can be easily downloaded, configured, compiled and flashed.
 
