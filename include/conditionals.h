@@ -52,11 +52,27 @@
         #define WRITE_MAGIC_NUMBER(a) LL_RTC_BAK_SetRegister(RTC, MAGIC_NUMBER_BKP_INDEX, a)
     #endif
 
+    #if defined(MULTI_RESET_INTERVAL_MSEC) && defined(MULTI_RESET_CLICKS)
+        #define USE_MULTI_RESET
+
+        #if MULTI_RESET_CLICKS < 2 || MULTI_RESET_CLICKS > 5
+            #error "Number of multi reset clicks must be a number between 2 and 5, inclusive."
+        #endif
+
+        #if MAGIC_NUMBER_BKP_VALUE < MULTI_RESET_CLICKS
+            #error "The magic value must be greater than or equal to the number of multi reset clicks."
+        #endif
+    #endif // MULTI_RESET
+#endif // MAGIC_NUMBER
+
+#if defined(MULTI_RESET_INTERVAL_MSEC) && defined(MULTI_RESET_CLICKS)
+    #if !defined(USE_MAGIC_NUMBER)
+        #error "Multiple reset click feature requires Magic Number."
+    #endif
 #endif
 
 #if defined(TRIGGER_PORT) && defined(TRIGGER_PIN) && defined(TRIGGER_STATE)
-    #define USE_TRIGGER
-   
+    #define USE_TRIGGER_PIN
 #endif
 
 #if defined(LED_PORT) && defined(LED_PIN) && defined(LED_ON)
@@ -81,15 +97,14 @@
     #error "Only one USB protocol is supported. Please comment out one (and only one) of USB_PROTOCOL_DFU, USB_PROTOCOL_HID"
 #endif
 
-#ifdef USB_PROTOCOL_HID
+#if defined(USB_PROTOCOL_HID)
     #define USB_DEVICE_VENDOR_ID 0x1209
     #define USB_DEVICE_PRODUCT_ID 0xBEBA
 
     #define USB_PROTOCOL "HID"
-
 #endif
 
-#ifdef USB_PROTOCOL_DFU
+#if defined(USB_PROTOCOL_DFU)
     
     #if MANY(USB_DEVICE_USE_STLINK_ID, USB_DEVICE_USE_HID_ID, USB_DEVICE_USE_STLINK_ID)
         #error "Only one USB device ID can be configured."
@@ -112,7 +127,7 @@
         #error "DFU Flash descriptor is undefined."
     #endif
 
-#endif
+#endif // USB_PROTOCOL_DFU
 
 #ifndef USB_DEVICE_VENDOR_ID
     #error "A vendor ID must be defined."
@@ -122,4 +137,4 @@
     #error "A product ID must be defined."
 #endif
 
-#endif
+#endif // __CONDITIONALS_H

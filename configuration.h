@@ -31,11 +31,23 @@
  * hosted firmware may store a magic number value and then reset the MCU.
  * If the bootloader reads the configured value from the configured register,
  * USB flashing mode will be entered.
- * Comment out the configuration macros to disable the feature.
+ * Comment out the any of the following two macros to disable the feature.
  */
 
-//#define MAGIC_NUMBER_BKP_INDEX   LL_RTC_BKP_DR4 // RTC backup register to look for magic number. Number of available registers depends on the MCU type.
-//#define MAGIC_NUMBER_BKP_VALUE   0x424C // magic number to look for
+#define MAGIC_NUMBER_BKP_INDEX   LL_RTC_BKP_DR4     // RTC backup register to look for magic number. Number of available registers depends on the MCU type.
+#define MAGIC_NUMBER_BKP_VALUE   0x424C             // magic number to look for
+
+/**
+ * Multi-clicking reset button trigger
+ *
+ * This trigger enters firmware flashing mode with multiple quick clicks on the reset button. Each click must occur within
+ * MULTI_RESET_INTERVAL_MSEC msec from the previous. Uses the magic number feature, so magic number must be enabled and configured.
+ * This is easier to trigger, but creates an additional MULTI_RESET_INTERVAL_MSEC delay to the system startup.
+ * Comment out any of the following two macros to disable this feature.
+ */
+
+#define MULTI_RESET_INTERVAL_MSEC   500             // The maximum number of msec to wait between each reset before booting normally
+#define MULTI_RESET_CLICKS          4               // The number of resets required to boot into firmware flashing mode
 
 /**
  * USB flashing trigger pin
@@ -45,6 +57,7 @@
  * Specify port (GPIOx), pin number and the opposite of the default pin state.
  * E.g. to use the RepRap Display button as a trigger (PA15 -> gnd), set
  * PORT to A, PIN to 15 and STATE to PIN_RESET.
+ * Comment out any of the following three macros to disable the feature.
  */
 
 #define TRIGGER_PORT                 B              // port letter
@@ -53,21 +66,22 @@
 
 /**
  * USB flashing led indication
- * 
+ *
  * Specify a pin to set when entering USB flashing mode. The pin will stay set
  * until data transfer begins. It will toggle while data is being written to memory
  * and it will reset when flashing completes and the board is reset.
  * E.g. to use a led connected to PA0 as an indicator, set PORT to A, PIN to 0, ON to PIN_SET.
+ * Comment out any of the following three macros to disable the feature.
  */
 
 #define LED_PORT                     C              // port letter
-#define LED_PIN                      15             // pin number
+#define LED_PIN                      13             // pin number
 #define LED_ON                       PIN_RESET      // PIN_SET / PIN_RESET
 
 /**
  * USB Protocol
  * 
- * Uncomment one (and only one) of the two following lines
+ * Uncomment one (and only one) of the following two macros:
  */
 
 #define USB_PROTOCOL_DFU            // Fast, standardized, compatible. Will require a customized driver in windows (see: https://bit.ly/3gzkopp)

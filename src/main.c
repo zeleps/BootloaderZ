@@ -77,10 +77,11 @@ volatile uint8_t reset_mcu = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 static void MX_GPIO_Init(void);
+static void WriteMagicNumber(uint16_t);
 
 #if ENABLED(USE_RTC)
 
-RTC_HandleTypeDef hrtc;
+    RTC_HandleTypeDef hrtc;
 
 static void InitRTC()
 {
@@ -116,12 +117,24 @@ int main(void)
 #ifdef USE_MAGIC_NUMBER
   TERN_(USE_RTC, InitRTC());
   uint32_t magic_val = READ_MAGIC_NUMBER();
+
+#if defined(USE_MULTI_RESET)
+  if (magic_val != MAGIC_NUMBER_BKP_VALUE)
+  {
+    WriteMagicNumber(magic_val == 0 ? MAGIC_NUMBER_BKP_VALUE - MULTI_RESET_CLICKS + 2 : magic_val + 1);
+
+    HAL_Delay(MULTI_RESET_INTERVAL_MSEC);
+
+    WriteMagicNumber(0);
+  }
+#endif
+
 #endif
 
   /* In case of incoming magic number or <TRIGGER_PIN> is LOW,
     jump to HID bootloader */
   if (TERN1(USE_MAGIC_NUMBER, magic_val != MAGIC_NUMBER_BKP_VALUE) &&
-      TERN1(USE_TRIGGER, HAL_GPIO_ReadPin(PORT(TRIGGER_PORT), PIN(TRIGGER_PIN)) != STATE(TRIGGER_STATE)))
+      TERN1(USE_TRIGGER_PIN, HAL_GPIO_ReadPin(PORT(TRIGGER_PORT), PIN(TRIGGER_PIN)) != STATE(TRIGGER_STATE)))
   {
     SET_LED(LED_OFF);
 
@@ -138,22 +151,17 @@ int main(void)
 
 #ifdef USE_MAGIC_NUMBER
   /* Reset the magic number backup memory */
-
-  #ifdef USE_RTC
-    HAL_RTCEx_DeactivateTamper(&hrtc, RTC_TAMPER_1);
-    __HAL_RTC_TAMPER_CLEAR_FLAG(&hrtc, RTC_FLAG_TAMP1F);
-  #endif
-
-  LL_PWR_EnableBkUpAccess();
-  WRITE_MAGIC_NUMBER(0);
-  LL_PWR_DisableBkUpAccess();
+  if (magic_val == MAGIC_NUMBER_BKP_VALUE)
+  {
+    WriteMagicNumber(0);
+  }
 #endif
   
   /* USER CODE END SysInit */
   
   /* Initialize all configured peripherals */
-  
-#if ANY(USE_MAGIC_NUMBER, USE_TRIGGER)
+
+#if ANY(USE_MAGIC_NUMBER, USE_TRIGGER_PIN)
   MX_USB_DEVICE_Init();
 #endif
 
@@ -164,6 +172,24 @@ int main(void)
   HAL_Delay(100);
   HAL_NVIC_SystemReset();
 
+}
+
+static void WriteMagicNumber(uint16_t val)
+{
+#ifdef USE_RTC
+  static uint8_t first_time = 1;
+
+  if (first_time == 1)
+  {
+    first_time = 0;
+    HAL_RTCEx_DeactivateTamper(&hrtc, RTC_TAMPER_1);
+    __HAL_RTC_TAMPER_CLEAR_FLAG(&hrtc, RTC_FLAG_TAMP1F);
+  }
+#endif
+
+  LL_PWR_EnableBkUpAccess();
+  WRITE_MAGIC_NUMBER(val);
+  LL_PWR_DisableBkUpAccess();
 }
 
 /* Configure pins as 
@@ -178,7 +204,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* Configure GPIO pin : TRIGGER */
-#if ENABLED(USE_TRIGGER)
+#if ENABLED(USE_TRIGGER_PIN)
   PORT_ENABLE(TRIGGER_PORT);
   GPIO_InitStruct.Pin =  PIN(TRIGGER_PIN);
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
