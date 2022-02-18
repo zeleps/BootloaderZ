@@ -46,7 +46,7 @@ Visit the [wiki](https://github.com/zeleps/BootloaderZ/wiki) for more info on fl
 
 # Future development
 
-More STM32 MCUs / boards to support.
+More triggers, more flashing methods, more STM32 MCUs / boards to support.
 
 So far, the project has been tested on the following boards:
 
