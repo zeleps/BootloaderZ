@@ -47,7 +47,7 @@
  */
 
 #define MULTI_RESET_INTERVAL_MSEC   500             // The maximum number of msec to wait between each reset before booting normally
-#define MULTI_RESET_CLICKS          4               // The number of resets required to boot into firmware flashing mode
+#define MULTI_RESET_CLICKS          3               // The number of resets required to boot into firmware flashing mode
 
 /**
  * USB flashing trigger pin
