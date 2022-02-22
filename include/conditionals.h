@@ -15,10 +15,7 @@
 #   define STM32F1XX
 #   define PLATFORM stm32f1xx
 
-#   define FLASH_1K_PAGES
-
 #   define FLASH_PAGE_MAP PAGES_STM32F1XX
-
 #   define FLASH_SIZE_DIVISOR 1024
 #   define DFU_FLASH_END FLASH_BANK1_END
 
@@ -29,8 +26,7 @@
 #   define STM32F4XX
 #   define PLATFORM stm32f4xx
 
-#   define FLASH_4X16_1X64_NX128_SECTORS
-#   define PAGES PAGES_STM32F4XX
+#   define FLASH_PAGE_MAP PAGES_STM32F4XX
 #   define FLASH_SIZE_DIVISOR 16384
 #   define DFU_FLASH_END FLASH_END
 

@@ -99,7 +99,7 @@
         #define USB_DEVICE_PRODUCT_ID 0xBEBA
     #endif
 
-    #define AUTOCREATE_DFU_FLASH_DESCRIPTOR
+    #define AUTOCREATE_DFU_FLASH_DESCRIPTOR     // Enable this setting to deduce the DFU device memory description string automatically (compile-time calculation)
 
 #endif
 

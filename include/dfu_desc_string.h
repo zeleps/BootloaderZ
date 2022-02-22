@@ -25,8 +25,6 @@
 #include "chaos/preprocessor/control/branch.h"
 #include "chaos/preprocessor/facilities/empty.h"
 
-//#include "chaos/preprocessor.h"
-
 #define PAGES_STM32F4XX \
     (4)(1),             \
         (1)(4),         \

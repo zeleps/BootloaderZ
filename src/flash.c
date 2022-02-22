@@ -3,24 +3,17 @@
 #include PLATFORM_H_MAIN
 #include "flash.h"
 
+#include "flash_sector_start.h"
+
 #ifdef STM32F4XX
 
 static uint8_t AddressToSector(uint32_t addr)
 {
-    uint8_t sector = (addr - FLASH_BASE) >> 14;
-    return sector <= 4 ? sector : (sector >> 3) + 4;
+    uint8_t sector = (addr - FLASH_BASE) / FLASH_SIZE_DIVISOR;
+    return ADDRESS_TO_SECTOR(sector);
 }
 
 #endif
-
-static uint8_t IsSectorStart(uint32_t addr)
-{
-    #if ENABLED(FLASH_1K_PAGES)
-        return (addr & 0x3ff) == 0;
-    #elif ENABLED(FLASH_4X16_1X64_NX128_SECTORS)
-        return (addr & 0x1ffff) == 0 || (addr <= 0x8010000 && (addr & 0x3fff) == 0);
-    #endif
-}
 
 static uint8_t BeginWrite()
 {
@@ -61,7 +54,7 @@ static uint8_t EraseFlashSectorInt(uint32_t addr)
 
 uint8_t EraseFlashSector(uint32_t addr)
 {
-    return IsSectorStart(addr) && BeginWrite() && EraseFlashSectorInt(addr) && EndWrite();
+    return (IS_SECTOR_START_ADDRESS(addr)) && BeginWrite() && EraseFlashSectorInt(addr) && EndWrite();
 }
 
 uint8_t WriteFlash(uint32_t addr, uint8_t *buff, uint32_t len, uint8_t eraseIfNeeded)
@@ -71,7 +64,7 @@ uint8_t WriteFlash(uint32_t addr, uint8_t *buff, uint32_t len, uint8_t eraseIfNe
         return 0;
     }
 
-    if (eraseIfNeeded && IsSectorStart(addr))
+    if (eraseIfNeeded && (IS_SECTOR_START_ADDRESS(addr)))
     {
         if (!EraseFlashSectorInt(addr))
         {
