@@ -98,7 +98,9 @@
         #define USB_DEVICE_VENDOR_ID 0x1209
         #define USB_DEVICE_PRODUCT_ID 0xBEBA
     #endif
-    
+
+    #define AUTOCREATE_DFU_FLASH_DESCRIPTOR
+
 #endif
 
 #endif

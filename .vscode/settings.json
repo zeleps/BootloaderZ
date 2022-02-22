@@ -31,6 +31,7 @@
         "stm32f1xx_ll_rtc.h": "c",
         "setup_clock.h": "c",
         "stm32f1xx_it.h": "c",
-        "stm32f1xx_hal_rcc_ex.h": "c"
+        "stm32f1xx_hal_rcc_ex.h": "c",
+        "dfu_desc_string.h": "c"
     }
 }

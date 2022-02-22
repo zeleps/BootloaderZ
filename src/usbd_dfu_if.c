@@ -27,6 +27,12 @@
 
 #define FLASH_MAX TERN(STM32F1XX, FLASH_BANK1_END, FLASH_END)
 
+#if defined(USB_PROTOCOL_DFU) && !defined(DFU_FLASH_DESCRIPTOR)
+
+#include "dfu_desc_string.h"
+
+#endif
+
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
