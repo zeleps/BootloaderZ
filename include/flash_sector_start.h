@@ -6,12 +6,9 @@
 #include "chaos/preprocessor/tuple/size.h"
 #include "chaos/preprocessor/tuple/take.h"
 #include "chaos/preprocessor/seq/to_tuple.h"
-#include "chaos/preprocessor/seq/reverse.h"
 #include "chaos/preprocessor/comparison/greater.h"
 #include "chaos/preprocessor/slot/slot.h"
 #include "chaos/preprocessor/repetition/repeat.h"
-
-// #include "chaos/preprocessor.h"
 
 #define PAGES_STM32F4XX \
     (4)(1),             \
@@ -30,14 +27,14 @@
 
 #define SECTOR_START_COND(arg, n, offs, cnt, siz)           \
     CHAOS_PP_WHEN(CHAOS_PP_GREATER(CHAOS_PP_SLOT(1), offs)) \
-    (CHAOS_PP_WHEN(n)(|| arg >= (DFU_FLASH_BASE + offs * FLASH_SIZE_DIVISOR) &&) arg <= (DFU_FLASH_BASE + (offs + cnt * siz) * FLASH_SIZE_DIVISOR) && ((arg - (DFU_FLASH_BASE + (offs * FLASH_SIZE_DIVISOR))) & (siz * FLASH_SIZE_DIVISOR - 1)) == 0)
+    (CHAOS_PP_WHEN(n)(|| arg >= (DFU_FLASH_BASE + offs * FLASH_SIZE_DIVISOR) &&) arg <= (DFU_FLASH_BASE + (offs + cnt * siz) * FLASH_SIZE_DIVISOR) CHAOS_PP_WHEN(CHAOS_PP_DEC(siz))( && ((arg - (DFU_FLASH_BASE + (offs * FLASH_SIZE_DIVISOR))) & (siz * FLASH_SIZE_DIVISOR - 1)) == 0))
 
 #define _CALC_OFFSET(x, y) CHAOS_PP_MUL(x, y), (0xchaos)(0xadd),                 /* (x * y + ) */
 #define CALC_OFFSET(s, t) CHAOS_PP_EXPAND(_CALC_OFFSET CHAOS_PP_SEQ_TO_TUPLE(t)) /* (cnt) (siz) => (cnt, siz) */
 
 #define ITERATE(s, n, tup, arg) CHAOS_PP_EXPAND(SECTOR_START_COND CHAOS_PP_SEQ_TO_TUPLE((arg)(n)(CHAOS_PP_MACHINE((, CHAOS_PP_EXPR(CHAOS_PP_TUPLE_FOR_EACH(CALC_OFFSET, CHAOS_PP_TUPLE_TAKE(n, tup))) 0, (0xchaos)(0xstop), )))CHAOS_PP_TUPLE_ELEM(1, n, tup)))
 
-#define IS_SECTOR_START_ADDRESS(arg) CHAOS_PP_EXPR(CHAOS_PP_REPEAT(CHAOS_PP_TUPLE_QUICK_SIZE((FLASH_PAGE_MAP)), ITERATE, (FLASH_PAGE_MAP), arg))
+#define IS_SECTOR_START_ADDRESS(arg) ((arg & (FLASH_SIZE_DIVISOR - 1)) == 0 && (CHAOS_PP_EXPR(CHAOS_PP_REPEAT(CHAOS_PP_TUPLE_QUICK_SIZE((FLASH_PAGE_MAP)), ITERATE, (FLASH_PAGE_MAP), arg))))
 
 // ADDRESS_TO_SECTOR macros
 

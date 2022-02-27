@@ -54,7 +54,7 @@ static uint8_t EraseFlashSectorInt(uint32_t addr)
 
 uint8_t EraseFlashSector(uint32_t addr)
 {
-    return (IS_SECTOR_START_ADDRESS(addr)) && BeginWrite() && EraseFlashSectorInt(addr) && EndWrite();
+    return IS_SECTOR_START_ADDRESS(addr) && BeginWrite() && EraseFlashSectorInt(addr) && EndWrite();
 }
 
 uint8_t WriteFlash(uint32_t addr, uint8_t *buff, uint32_t len, uint8_t eraseIfNeeded)
@@ -64,7 +64,7 @@ uint8_t WriteFlash(uint32_t addr, uint8_t *buff, uint32_t len, uint8_t eraseIfNe
         return 0;
     }
 
-    if (eraseIfNeeded && (IS_SECTOR_START_ADDRESS(addr)))
+    if (eraseIfNeeded && IS_SECTOR_START_ADDRESS(addr))
     {
         if (!EraseFlashSectorInt(addr))
         {

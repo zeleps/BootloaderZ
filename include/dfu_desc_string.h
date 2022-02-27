@@ -2,28 +2,15 @@
 #define __DFU_DESC_STRING_H
 
 #include "chaos/preprocessor/arithmetic.h"
-#include "chaos/preprocessor/arithmetic/add.h"
-#include "chaos/preprocessor/arithmetic/mul.h"
-#include "chaos/preprocessor/arithmetic/sub.h"
-#include "chaos/preprocessor/arithmetic/div.h"
-#include "chaos/preprocessor/tuple/elem.h"
 #include "chaos/preprocessor/tuple/for_each.h"
 #include "chaos/preprocessor/tuple/size.h"
 #include "chaos/preprocessor/tuple/take.h"
 #include "chaos/preprocessor/seq/to_tuple.h"
 #include "chaos/preprocessor/comparison/min.h"
-#include "chaos/preprocessor/comparison/greater.h"
-#include "chaos/preprocessor/stringize.h"
 #include "chaos/preprocessor/slot/slot.h"
 #include "chaos/preprocessor/repetition/repeat.h"
-#include "chaos/preprocessor/recursion/expr.h"
-#include "chaos/preprocessor/recursion/machine.h"
-#include "chaos/preprocessor/facilities/expand.h"
 #include "chaos/preprocessor/facilities/indirect.h"
-#include "chaos/preprocessor/control/if.h"
-#include "chaos/preprocessor/control/iif.h"
 #include "chaos/preprocessor/control/branch.h"
-#include "chaos/preprocessor/facilities/empty.h"
 
 #define PAGES_STM32F4XX \
     (4)(1),             \
@@ -33,6 +20,7 @@
         (1)(4),         \
         (7)(8)
 
+// breakdown required to conform to the 2 digit sector count
 #define PAGES_STM32F1XX \
     (99)(1),            \
         (99)(1),        \
@@ -40,6 +28,16 @@
         (99)(1),        \
         (99)(1),        \
         (17)(1)
+
+#ifndef DFU_FLASH_BASE_STRING
+
+    #if DFU_FLASH_BASE != 0x08000000
+        #error "Flash base is not 0x08000000. Please define DFU_FLASH_BASE_STRING in Configuration.h."
+    #endif
+    
+    #define DFU_FLASH_BASE_STRING "0x08000000"
+
+#endif
 
 #define CHAOS_PP_VALUE (DFU_FLASH_END + 1 - DFU_FLASH_BASE) / FLASH_SIZE_DIVISOR
 #include CHAOS_PP_ASSIGN_SLOT(1)
@@ -69,6 +67,6 @@
 
 #define MACRO(s, n, tup) CHAOS_PP_EXPAND(PROCESS_PAGE CHAOS_PP_SEQ_TO_TUPLE((n) (CHAOS_PP_MACHINE((, CHAOS_PP_EXPR(CHAOS_PP_TUPLE_FOR_EACH(CALC_OFFSET, CHAOS_PP_TUPLE_TAKE(n, tup))) 0, (0xchaos)(0xstop), ))) CHAOS_PP_TUPLE_ELEM(1, n, tup))) /* (for ((cnt,siz) in PAGES[i < n]) => SUM(cnt*siz)) (cnt) (siz) => PROCESS_PAGE(offs, cnt, siz) */
 
-#define DFU_FLASH_DESCRIPTOR "@Internal Flash /0x08000000/" CHAOS_PP_EXPR(CHAOS_PP_REPEAT(CHAOS_PP_TUPLE_QUICK_SIZE((FLASH_PAGE_MAP)), MACRO, (FLASH_PAGE_MAP))) /* foreach ((cnt, siz) in PAGES) => MACRO(n, (cnt, siz)) */
+#define DFU_FLASH_DESCRIPTOR "@Internal Flash /" DFU_FLASH_BASE_STRING "/" CHAOS_PP_EXPR(CHAOS_PP_REPEAT(CHAOS_PP_TUPLE_QUICK_SIZE((FLASH_PAGE_MAP)), MACRO, (FLASH_PAGE_MAP))) /* foreach ((cnt, siz) in PAGES) => MACRO(n, (cnt, siz)) */
 
 #endif // __DFU_DESC_STRING_H
