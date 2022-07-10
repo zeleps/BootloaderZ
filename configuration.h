@@ -31,7 +31,7 @@
  * hosted firmware may store a magic number value and then reset the MCU.
  * If the bootloader reads the configured value from the configured register,
  * USB flashing mode will be entered.
- * Comment out the any of the following two macros to disable the feature.
+ * Comment out any of the following two macros to disable the feature.
  */
 
 #define MAGIC_NUMBER_BKP_INDEX   LL_RTC_BKP_DR4     // RTC backup register to look for magic number. Number of available registers depends on the MCU type.
